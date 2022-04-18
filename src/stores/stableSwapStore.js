@@ -877,7 +877,7 @@ class Store {
         // },
       })
       const pairsCall = await response.json()
-      return pairsCall.data.slice(0, 10) // TODO REMOVE
+      return pairsCall.data
     } catch (ex) {
       console.log(ex)
       return []
@@ -999,9 +999,9 @@ class Store {
           }
         })
       )
-
-      this.setStore({ vestNFTs: [...nfts, ...v2Nfts] })
-      this.emitter.emit(ACTIONS.UPDATED)
+      const vestNFTs = [...nfts, ...v2Nfts]
+      this.setStore({ vestNFTs })
+      this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, vestNFTs)
     } catch (ex) {
       console.error(ex)
       this.emitter.emit(ACTIONS.ERROR, ex)
@@ -3897,8 +3897,37 @@ class Store {
         })
       )
 
-      this.setStore({ vestNFTs: nfts })
-      this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, nfts)
+      // Gets and formats v2 locked and merges with the nfts above
+      const v2VoteContract = new web3.eth.Contract(CONTRACTS.V2_VOTER_ABI, CONTRACTS.V2_VOTER_ADDRESS)
+      const v2LockedLength = await v2VoteContract.methods.balanceOf(account.address).call()
+
+      const v2Arr = Array.from({ length: parseInt(v2LockedLength) }, (v, i) => i)
+
+      const v2Nfts = await Promise.all(
+        v2Arr.map(async (idx) => {
+          const tokenIndex = await v2VoteContract.methods.ownerToNFTokenIdList(account.address, idx).call()
+          const voteDelay = (await v2VoteContract.methods.lastUserVote(tokenIndex).call()) + 864000 // 10 days
+          const isVoteLocked = Date.now() > voteDelay
+          const locked = await vestingContract.methods.locked(tokenIndex).call()
+          const lockValue = await vestingContract.methods.balanceOfNFT(tokenIndex).call()
+
+          return {
+            id: tokenIndex,
+            lockEnds: locked.end,
+            lockAmount: BigNumber(locked.amount)
+              .div(10 ** govToken.decimals)
+              .toFixed(govToken.decimals),
+            lockValue: BigNumber(lockValue)
+              .div(10 ** veToken.decimals)
+              .toFixed(veToken.decimals),
+            isDeposited: true,
+            isVoteLocked,
+          }
+        })
+      )
+      const vestNFTs = [...nfts, ...v2Nfts]
+      this.setStore({ vestNFTs })
+      this.emitter.emit(ACTIONS.VEST_NFTS_RETURNED, vestNFTs)
     } catch (ex) {
       console.error(ex)
       this.emitter.emit(ACTIONS.ERROR, ex)
@@ -4432,6 +4461,7 @@ class Store {
         return BigNumber(vote.value).times(100).toFixed(0)
       })
 
+      console.log('[tokenID, tokens, voteCounts]', [tokenID, tokens, voteCounts])
       this._callContractWait(
         web3,
         v2VoteContract,
@@ -4747,7 +4777,6 @@ class Store {
       this.emitter.emit(ACTIONS.ERROR, ex)
     }
   }
-
 
   claimBribes = async (payload) => {
     try {

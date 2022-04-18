@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-
 import classes from './ssBribes.module.css'
-
 import BribeCard from '../ssBribeCard'
 
 import stores from '../../stores'
@@ -50,14 +48,12 @@ export default function Bribes() {
 
   return (
     <div className={classes.container}>
+      <EnhancedTableToolbar search={search} onSearchChanged={onSearchChanged} />
       {filteredBribes.length > 0 && (
-        <div>
-          <EnhancedTableToolbar search={search} onSearchChanged={onSearchChanged} />
-          <div className={classes.bribesContainer}>
-            {filteredBribes.map((bribe, index) => {
-              return <BribeCard key={index} bribe={bribe} />
-            })}
-          </div>
+        <div className={classes.bribesContainer}>
+          {filteredBribes.map((bribe, index) => {
+            return <BribeCard key={index} bribe={bribe} />
+          })}
         </div>
       )}
     </div>

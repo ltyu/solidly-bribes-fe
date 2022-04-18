@@ -131,6 +131,9 @@ function Navigation(props) {
 
   useEffect(() => {
     const activePath = router.asPath
+    if (activePath.includes('vest')) {
+      setActive('vest')
+    }
     if (activePath.includes('vote')) {
       setActive('vote')
     }
@@ -142,6 +145,7 @@ function Navigation(props) {
   const renderNavs = () => {
     return (
       <ToggleButtonGroup value={active} exclusive onChange={onActiveClick} className={classes.navToggles}>
+        {renderSubNav('Vest', 'vest')}
         {renderSubNav('Vote', 'vote')}
         {renderSubNav('Bribe', 'bribe')}
       </ToggleButtonGroup>

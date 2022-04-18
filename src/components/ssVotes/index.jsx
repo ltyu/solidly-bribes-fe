@@ -103,6 +103,7 @@ export default function Votes() {
 
   const onVote = () => {
     setVoteLoading(true)
+    console.log('voting')
     stores.dispatcher.dispatch({ type: ACTIONS.VOTE, content: { votes, tokenID: token.id } })
   }
 

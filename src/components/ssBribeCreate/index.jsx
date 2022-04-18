@@ -264,7 +264,7 @@ export default function BribeCreate() {
   }
 
   const onBack = () => {
-    router.push('/vote')
+    router.push('/bribe')
   }
 
   const renderCreateInfo = () => {

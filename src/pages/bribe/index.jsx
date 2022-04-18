@@ -90,7 +90,7 @@ function BalanceIcon(props) {
 export const NftDropdown = () => {
   const [token, setToken] = useState({}) // value
   const [vestNFTs, setVestNFTs] = useState(stores.stableSwapStore.getStore('vestNFTs'))
-  const [veToken, setVeToken] = useState(stores.stableSwapStore.getStore('veToken'))
+  const [veToken, setVeToken] = useState()
 
   const onSelect = (event) => {
     setToken(event.target.value)
@@ -98,7 +98,16 @@ export const NftDropdown = () => {
   }
 
   useEffect(() => {
-    setVeToken(stores.stableSwapStore.getStore('veToken'))
+    const onVestNFTsReturned = (nfts) => {
+      setVestNFTs(nfts)
+      setVeToken(stores.stableSwapStore.getStore('veToken'))
+    }
+
+    stores.emitter.on(ACTIONS.VEST_NFTS_RETURNED, onVestNFTsReturned)
+
+    return () => {
+      stores.emitter.removeListener(ACTIONS.VEST_NFTS_RETURNED, onVestNFTsReturned)
+    }
   }, [])
 
   useEffect(() => {
