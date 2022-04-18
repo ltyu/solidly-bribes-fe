@@ -1,0 +1,50 @@
+{
+  "env": {
+    "node": true,
+    "browser": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "extends": [
+    "next",
+    "plugin:react/recommended",
+    
+    "plugin:prettier/recommended",
+    "prettier"
+  ],
+  "plugins": ["unused-imports"],
+  "rules": {
+    "unused-imports/no-unused-imports": "error",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": 0,
+    "object-shorthand": ["error", "always"],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "lodash",
+            "message": "Please import from 'lodash/module' directly to support tree-shaking."
+          },
+          {
+            "name": "ethers",
+            "message": "Please import from '@ethersproject/module' directly to support tree-shaking."
+          }
+        ]
+      }
+    ]
+  }
+}
